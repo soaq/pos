@@ -1,0 +1,4 @@
+interface:
+  display_name: Restaurant 3D Planner
+  short_description: Build web workflows for editable 3D restaurant kitchen scans.
+  default_prompt: Use $restaurant-3d-planner to design or implement scan-to-edit workflows for restaurant spaces and equipment.
