@@ -93,23 +93,36 @@ h1 {
   line-height: 1.5;
 }
 
-.steps {
+.controls,
+.inspector {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin-top: 28px;
 }
 
-.step {
-  min-height: 130px;
-  padding: 18px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.52);
+.inspector {
+  grid-template-columns: 1.2fr 0.7fr 0.7fr;
 }
 
-.step strong {
+label {
   display: block;
-  margin-bottom: 8px;
+  color: var(--steel);
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+input {
+  width: 100%;
+  margin-top: 8px;
+  padding: 13px 14px;
+  border: 1px solid rgba(24, 20, 15, 0.14);
+  border-radius: 15px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.7);
+  outline: none;
 }
 
 .capture {
@@ -152,6 +165,11 @@ video {
   margin-top: 14px;
 }
 
+.captureBar.compact {
+  margin-top: 0;
+  justify-content: flex-end;
+}
+
 .button {
   padding: 13px 18px;
   border-radius: 999px;
@@ -165,8 +183,19 @@ video {
 }
 
 .status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 12px;
   color: var(--steel);
   font-size: 14px;
+}
+
+.download {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(216, 84, 47, 0.1);
 }
 
 .workspace {
@@ -177,11 +206,32 @@ video {
   margin: 24px auto 0;
 }
 
+.planner {
+  padding: 24px;
+}
+
+.plannerHead {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.planner h2 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 32px;
+  letter-spacing: -0.03em;
+}
+
 .layoutGrid {
   position: relative;
-  min-height: 360px;
+  overflow: hidden;
+  min-height: 430px;
   padding: 18px;
   border-radius: 28px;
+  touch-action: none;
   background:
     linear-gradient(var(--tile) 1px, transparent 1px),
     linear-gradient(90deg, var(--tile) 1px, transparent 1px),
@@ -200,6 +250,13 @@ video {
   box-shadow: 0 14px 24px rgba(24, 20, 15, 0.18);
   font-size: 13px;
   font-weight: 800;
+  touch-action: none;
+  user-select: none;
+}
+
+.equipment.selected {
+  border-color: var(--fire);
+  box-shadow: 0 0 0 5px rgba(216, 84, 47, 0.16), 0 14px 24px rgba(24, 20, 15, 0.18);
 }
 
 .queue {
@@ -211,6 +268,10 @@ video {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 32px;
   letter-spacing: -0.03em;
+}
+
+.queue h2:not(:first-child) {
+  margin-top: 26px;
 }
 
 .queueItem {
@@ -225,6 +286,17 @@ video {
   color: var(--steel);
 }
 
+.queueItem small {
+  display: block;
+  margin-top: 3px;
+  color: var(--steel);
+}
+
+.empty {
+  color: var(--steel);
+  line-height: 1.5;
+}
+
 @media (max-width: 860px) {
   .shell {
     padding: 14px;
@@ -232,11 +304,21 @@ video {
 
   .hero,
   .workspace,
-  .steps {
+  .controls,
+  .inspector {
     grid-template-columns: 1fr;
   }
 
   .intro {
     padding: 26px;
+  }
+
+  .plannerHead {
+    display: block;
+  }
+
+  .captureBar.compact {
+    justify-content: flex-start;
+    margin-top: 14px;
   }
 }

@@ -1,6 +1,6 @@
 # Restaurant 3D Planner
 
-Web-first prototype for scanning restaurant kitchens and turning equipment into editable layout objects.
+Web-first MVP for scanning restaurant kitchens and turning equipment into editable layout objects.
 
 ## Stack
 
@@ -8,6 +8,15 @@ Web-first prototype for scanning restaurant kitchens and turning equipment into 
 - Supabase
 - Vercel
 - Three.js-ready frontend
+
+## Current Features
+
+- Phone camera capture over HTTPS
+- Browser recording download
+- Scan queue with local persistence
+- Drag-and-resize equipment layout
+- JSON layout export
+- PWA manifest for mobile install
 
 ## Environment
 
