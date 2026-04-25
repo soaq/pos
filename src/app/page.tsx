@@ -5,6 +5,10 @@ import { hasSupabaseConfig } from "@/lib/supabase";
 
 type CaptureState = "idle" | "camera-ready" | "queued";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://restaurant-3d-planner.vercel.app";
+const githubRepo = process.env.NEXT_PUBLIC_GITHUB_REPO ?? "https://github.com/soaq/pos";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://tgoyekuadpmjrblfqqge.supabase.co";
+
 const jobs = [
   ["Guided scan", "Phone video/photos captured in browser"],
   ["Reconstruction", "Server job creates reference scene"],
@@ -115,15 +119,19 @@ export default function Home() {
           <h2>System wiring</h2>
           <div className="queueItem">
             <strong>Supabase</strong>
-            <span>{hasSupabaseConfig ? "Configured" : "Needs anon key"}</span>
+            <span>{hasSupabaseConfig ? "Client ready" : "URL ready, anon key needed"}</span>
           </div>
           <div className="queueItem">
             <strong>GitHub</strong>
-            <span>Ready after remote is added</span>
+            <a href={githubRepo}>Repo pushed</a>
           </div>
           <div className="queueItem">
             <strong>Vercel</strong>
-            <span>CLI authenticated</span>
+            <a href={siteUrl}>Production live</a>
+          </div>
+          <div className="queueItem">
+            <strong>Database URL</strong>
+            <span>{new URL(supabaseUrl).host}</span>
           </div>
         </div>
       </section>

@@ -31,6 +31,12 @@ button {
   cursor: pointer;
 }
 
+a {
+  color: var(--fire);
+  font-weight: 800;
+  text-decoration: none;
+}
+
 button:disabled {
   cursor: not-allowed;
   opacity: 0.58;

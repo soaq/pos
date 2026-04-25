@@ -30,4 +30,10 @@ npm run dev
 npx vercel
 ```
 
-For GitHub-backed deployments, add a GitHub remote, push the repo, then import it in Vercel.
+## Live Wiring
+
+- Production: https://restaurant-3d-planner.vercel.app
+- GitHub: https://github.com/soaq/pos
+- Supabase: https://tgoyekuadpmjrblfqqge.supabase.co
+
+GitHub-backed auto-deploys require the Vercel account to add GitHub as a login connection. CLI deploys already work.
