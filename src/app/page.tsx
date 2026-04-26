@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { hasSupabaseConfig } from "@/lib/supabase";
+import { ScanPreview } from "@/components/ScanPreview";
 
 type CaptureState = "idle" | "camera-ready" | "recording" | "queued" | "ready";
 type ScanStatus = "queued" | "processing" | "ready";
@@ -21,6 +22,8 @@ type ScanRecord = {
   status: ScanStatus;
   createdAt: string;
   scaleReference: string;
+  coverage: number;
+  durationSeconds: number;
 };
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://restaurant-3d-planner.vercel.app";
@@ -43,12 +46,15 @@ export default function Home() {
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const dragRef = useRef<{ id: string; dx: number; dy: number } | null>(null);
+  const metricsRef = useRef({ coverage: 0, durationSeconds: 0 });
 
   const [state, setState] = useState<CaptureState>("idle");
   const [error, setError] = useState("");
   const [scanName, setScanName] = useState("Kitchen scan");
   const [scaleReference, setScaleReference] = useState("36 in doorway");
   const [recordingUrl, setRecordingUrl] = useState("");
+  const [coverage, setCoverage] = useState(0);
+  const [durationSeconds, setDurationSeconds] = useState(0);
   const [scans, setScans] = useState<ScanRecord[]>([]);
   const [equipment, setEquipment] = useState<EquipmentItem[]>(defaultEquipment);
   const [selectedId, setSelectedId] = useState(defaultEquipment[0].id);
@@ -83,6 +89,8 @@ export default function Home() {
     if (!streamRef.current) return;
 
     chunksRef.current = [];
+    setCoverage(8);
+    setDurationSeconds(0);
     const mimeType = preferredMimeType();
     const recorder = mimeType
       ? new MediaRecorder(streamRef.current, { mimeType })
@@ -112,6 +120,8 @@ export default function Home() {
       status: "processing",
       createdAt: new Date().toISOString(),
       scaleReference,
+      coverage: metricsRef.current.coverage,
+      durationSeconds: metricsRef.current.durationSeconds,
     };
     setScans((current) => [scan, ...current]);
     setState("queued");
@@ -181,6 +191,7 @@ export default function Home() {
       exportedAt: new Date().toISOString(),
       scans,
       equipment,
+      scanMetrics: { coverage, durationSeconds },
       supabaseUrl,
       githubRepo,
       siteUrl,
@@ -215,6 +226,21 @@ export default function Home() {
   }, [scans, equipment]);
 
   useEffect(() => {
+    metricsRef.current = { coverage, durationSeconds };
+  }, [coverage, durationSeconds]);
+
+  useEffect(() => {
+    if (state !== "recording") return;
+
+    const timer = window.setInterval(() => {
+      setDurationSeconds((current) => current + 1);
+      setCoverage((current) => Math.min(100, current + 7));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [state]);
+
+  useEffect(() => {
     return () => {
       streamRef.current?.getTracks().forEach((track) => track.stop());
       if (recordingUrl) URL.revokeObjectURL(recordingUrl);
@@ -225,11 +251,11 @@ export default function Home() {
     <main className="shell">
       <section className="hero">
         <div className="panel intro">
-          <p className="eyebrow">Live kitchen scanner MVP</p>
-          <h1>Scan a kitchen. Move the equipment. Export the plan.</h1>
+          <p className="eyebrow">3D kitchen scan workflow</p>
+          <h1>Capture enough coverage for a usable 3D reconstruction.</h1>
           <p className="lede">
-            Use a phone browser to capture the room, track scan records, drag equipment into a new
-            layout, and export the plan for the reconstruction backend.
+            Record a slow perimeter pass, include a measured scale reference, and keep equipment
+            visible from multiple angles so the reconstruction step has usable geometry.
           </p>
 
           <div className="controls">
@@ -244,6 +270,15 @@ export default function Home() {
                 onChange={(event) => setScaleReference(event.target.value)}
               />
             </label>
+          </div>
+
+          <div className="scanGuide">
+            {scanGuidance(coverage).map((step) => (
+              <div className={step.done ? "guideStep done" : "guideStep"} key={step.label}>
+                <strong>{step.label}</strong>
+                <span>{step.text}</span>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -275,7 +310,25 @@ export default function Home() {
               </a>
             ) : null}
           </div>
+          <div className="scanMeters">
+            <Meter label="3D coverage" value={coverage} />
+            <Meter label="Duration" value={Math.min(100, Math.round((durationSeconds / 45) * 100))} text={`${durationSeconds}s`} />
+            <Meter label="Scale anchor" value={scaleReference.trim() ? 100 : 0} text={scaleReference.trim() ? "set" : "missing"} />
+          </div>
         </div>
+      </section>
+
+      <section className="scanFocus panel">
+        <div>
+          <p className="eyebrow">Reconstruction preview</p>
+          <h2>Live scan cloud</h2>
+          <p>
+            This preview visualizes capture coverage and equipment placement. The production
+            backend will replace this simulated point cloud with photogrammetry or Gaussian splat
+            output.
+          </p>
+        </div>
+        <ScanPreview coverage={coverage} equipment={equipment} recording={state === "recording"} />
       </section>
 
       <section className="workspace">
@@ -344,7 +397,9 @@ export default function Home() {
               <div className="queueItem" key={scan.id}>
                 <div>
                   <strong>{scan.name}</strong>
-                  <small>{scan.scaleReference}</small>
+                  <small>
+                    {scan.scaleReference} / {scan.coverage}% / {scan.durationSeconds}s
+                  </small>
                 </div>
                 <span>{scan.status}</span>
               </div>
@@ -393,4 +448,36 @@ function statusText(state: CaptureState) {
   if (state === "ready") return "Scan ready";
   if (state === "camera-ready") return "Camera ready";
   return "Waiting for camera";
+}
+
+function Meter({ label, value, text }: { label: string; value: number; text?: string }) {
+  return (
+    <div className="meter">
+      <div>
+        <strong>{label}</strong>
+        <span>{text ?? `${value}%`}</span>
+      </div>
+      <i style={{ width: `${clamp(value, 0, 100)}%` }} />
+    </div>
+  );
+}
+
+function scanGuidance(coverage: number) {
+  return [
+    {
+      label: "1. Perimeter pass",
+      text: "Walk the room edge slowly.",
+      done: coverage >= 25,
+    },
+    {
+      label: "2. Equipment faces",
+      text: "Capture front, sides, and top edges.",
+      done: coverage >= 55,
+    },
+    {
+      label: "3. Occlusion pass",
+      text: "Fill gaps behind racks and prep tables.",
+      done: coverage >= 80,
+    },
+  ];
 }

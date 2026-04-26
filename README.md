@@ -13,6 +13,8 @@ Web-first MVP for scanning restaurant kitchens and turning equipment into editab
 
 - Phone camera capture over HTTPS
 - Browser recording download
+- Guided 3D coverage workflow
+- Three.js scan-cloud preview
 - Scan queue with local persistence
 - Drag-and-resize equipment layout
 - JSON layout export
